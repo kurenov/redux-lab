@@ -6,6 +6,21 @@ import React from 'react';
 import { createStore, combineReducers } from 'redux';
 import ReactDOM from 'react-dom';
 
+// helper functions
+const getVisibleTodos = (todos, filter) => {
+  switch (filter) {
+    case 'SHOW_ALL':
+      return todos;
+    case 'SHOW_ACTIVE':
+      return todos.filter((t) => !t.completed);
+    case 'SHOW_COMPLETED':
+      return todos.filter((t) => t.completed);
+  }
+};
+
+let todoId = 0;
+
+// reducer function & its compositions
 const todo = (state, action) => {
   switch (action.type) {
     case 'ADD_TODO':
@@ -40,7 +55,6 @@ const todos = (state = [], action) => {
 };
 
 const visibilityFilter = (state = 'SHOW_ALL', action) => {
-  // return {...state, action.filter || 'SHOW_ALL';
   switch (action.filter) {
     case 'SHOW_ALL':
       return 'SHOW_ALL';
@@ -57,17 +71,11 @@ const todoApp = combineReducers({
   todos,
   visibilityFilter
 });
+
+// store
 const store = createStore(todoApp);
 
-const Counter = ({value, increment}) => {
-  return (
-    <div>
-      <h1>{value}</h1>
-      <button onClick={increment}>+</button>
-    </div>
-  );
-};
-
+// presentational (functional) and class components
 const Link = ({ children, active, onClick }) => {
   if (active) {
     return <span>{children}</span>;
@@ -87,12 +95,10 @@ const Link = ({ children, active, onClick }) => {
 
 class FilterLink extends React.Component {
   componentDidMount() {
-    console.log('componentDidMount');
     this.unsubscribe = store.subscribe(() => this.forceUpdate());
   }
 
   componentWillUnmount() {
-    console.log('componentWillUnmount');
     this.unsubscribe();
   }
 
@@ -146,8 +152,15 @@ const TodoList = ({todos, onTodoClick}) => {
 };
 
 class VisibleTodoList extends React.Component {
+  componentDidMount() {
+    this.unsubscribe = store.subscribe(() => this.forceUpdate());
+  }
+
+  componentWillUnmount() {
+    this.unsubscribe();
+  }
   render() {
-    // const props = this.props;
+    const props = this.props;
     const state = store.getState();
 
     return (
@@ -214,19 +227,6 @@ const Footer = ({ visibilityFilter, onFilterClick }) => {
     </FilterLink>
   </p>);
 };
-
-const getVisibleTodos = (todos, filter) => {
-  switch (filter) {
-    case 'SHOW_ALL':
-      return todos;
-    case 'SHOW_ACTIVE':
-      return todos.filter((t) => !t.completed);
-    case 'SHOW_COMPLETED':
-      return todos.filter((t) => t.completed);
-  }
-};
-
-let todoId = 0;
 
 const TodoApp = () => (
   <div>
