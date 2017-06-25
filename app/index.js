@@ -72,9 +72,6 @@ const todoApp = combineReducers({
   visibilityFilter
 });
 
-// store
-const store = createStore(todoApp);
-
 // presentational (functional) and class components
 const Link = ({ children, active, onClick }) => {
   if (active) {
@@ -95,7 +92,7 @@ const Link = ({ children, active, onClick }) => {
 
 class FilterLink extends React.Component {
   componentDidMount() {
-    const { store } = this.props;
+    const { store } = this.context;
     this.unsubscribe = store.subscribe(() => this.forceUpdate());
   }
 
@@ -105,7 +102,7 @@ class FilterLink extends React.Component {
 
   render () {
     const props = this.props;
-    const { store } = props;
+    const { store } = this.context;
     const state = store.getState();
 
     return (
@@ -125,6 +122,9 @@ class FilterLink extends React.Component {
     );
   }
 }
+FilterLink.contextTypes = {
+  store: React.PropTypes.object
+};
 
 const Todo = ({ onClick, text, completed }) => {
   return (<li
@@ -155,7 +155,7 @@ const TodoList = ({todos, onTodoClick}) => {
 
 class VisibleTodoList extends React.Component {
   componentDidMount() {
-    const { store } = this.props;
+    const { store } = this.context;
     this.unsubscribe = store.subscribe(() => this.forceUpdate());
   }
 
@@ -163,8 +163,8 @@ class VisibleTodoList extends React.Component {
     this.unsubscribe();
   }
   render() {
-    const props = this.props;
-    const { store } = props;
+    // const props = this.props;
+    const { store } = this.context;
     const state = store.getState();
 
     return (
@@ -182,9 +182,12 @@ class VisibleTodoList extends React.Component {
     );
   }
 }
+VisibleTodoList.contextTypes = {
+  store: React.PropTypes.object
+};
 
 
-const AddTodo = ({ store }) => {
+const AddTodo = (props, { store }) => {
   let input;
   return (<div>
     <input
@@ -207,27 +210,27 @@ const AddTodo = ({ store }) => {
     </button>
   </div>);
 };
+AddTodo.contextTypes = {
+  store: React.PropTypes.object
+};
 
 const Footer = ({ store }) => {
   return (<p>
     Show:
     {' '}
     <FilterLink
-      store={store}
       filter='SHOW_ALL'
     >
       All
     </FilterLink>
     {' '}
     <FilterLink
-      store={store}
       filter='SHOW_ACTIVE'
     >
       Active
     </FilterLink>
     {' '}
     <FilterLink
-      store={store}
       filter='SHOW_COMPLETED'
     >
       Completed
@@ -237,17 +240,33 @@ const Footer = ({ store }) => {
 
 const TodoApp = ({ store }) => (
   <div>
-    <AddTodo store={store} />
-    <VisibleTodoList store={store} />
-    <Footer store={store} />
+    <AddTodo/>
+    <VisibleTodoList/>
+    <Footer/>
   </div>
 );
 
-// removing the render function, since
-// components in TodoApp, are subscribed by themselves
+// Advanced React component, which sends context
+// Wrap any component with Provider, and it will render the component itself
+// props will be available for children and grandchildren components via React's advanced context feature
+class Provider extends React.Component {
+  // sending props to all descendants components
+  getChildContext() {
+    return {
+      store: this.props.store
+    };
+  }
+  render() {
+    return this.props.children;
+  };
+}
+Provider.childContextTypes = {
+  store: React.PropTypes.object
+};
+
 ReactDOM.render(
-  <TodoApp
-    store={store}
-  />,
+  <Provider store={createStore(todoApp)}>
+    <TodoApp/>
+  </Provider>,
   document.getElementById('root')
 );
