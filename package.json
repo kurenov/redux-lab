@@ -11,6 +11,8 @@
   "dependencies": {
     "babel-preset-stage-2": "^6.24.1",
     "html-webpack-plugin": "^2.26.0",
+    "lodash": "^4.17.4",
+    "node-uuid": "^1.4.8",
     "path": "^0.12.7",
     "react": "^15.4.2",
     "react-dom": "^15.4.2",
