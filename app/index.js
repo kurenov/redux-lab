@@ -95,6 +95,7 @@ const Link = ({ children, active, onClick }) => {
 
 class FilterLink extends React.Component {
   componentDidMount() {
+    const { store } = this.props;
     this.unsubscribe = store.subscribe(() => this.forceUpdate());
   }
 
@@ -104,6 +105,7 @@ class FilterLink extends React.Component {
 
   render () {
     const props = this.props;
+    const { store } = props;
     const state = store.getState();
 
     return (
@@ -153,6 +155,7 @@ const TodoList = ({todos, onTodoClick}) => {
 
 class VisibleTodoList extends React.Component {
   componentDidMount() {
+    const { store } = this.props;
     this.unsubscribe = store.subscribe(() => this.forceUpdate());
   }
 
@@ -161,6 +164,7 @@ class VisibleTodoList extends React.Component {
   }
   render() {
     const props = this.props;
+    const { store } = props;
     const state = store.getState();
 
     return (
@@ -180,7 +184,7 @@ class VisibleTodoList extends React.Component {
 }
 
 
-const AddTodo = ({ onAddClick }) => {
+const AddTodo = ({ store }) => {
   let input;
   return (<div>
     <input
@@ -204,23 +208,26 @@ const AddTodo = ({ onAddClick }) => {
   </div>);
 };
 
-const Footer = ({ visibilityFilter, onFilterClick }) => {
+const Footer = ({ store }) => {
   return (<p>
     Show:
     {' '}
     <FilterLink
+      store={store}
       filter='SHOW_ALL'
     >
       All
     </FilterLink>
     {' '}
     <FilterLink
+      store={store}
       filter='SHOW_ACTIVE'
     >
       Active
     </FilterLink>
     {' '}
     <FilterLink
+      store={store}
       filter='SHOW_COMPLETED'
     >
       Completed
@@ -228,11 +235,11 @@ const Footer = ({ visibilityFilter, onFilterClick }) => {
   </p>);
 };
 
-const TodoApp = () => (
+const TodoApp = ({ store }) => (
   <div>
-    <AddTodo/>
-    <VisibleTodoList/>
-    <Footer/>
+    <AddTodo store={store} />
+    <VisibleTodoList store={store} />
+    <Footer store={store} />
   </div>
 );
 
@@ -240,7 +247,7 @@ const TodoApp = () => (
 // components in TodoApp, are subscribed by themselves
 ReactDOM.render(
   <TodoApp
-    {...store.getState()}
+    store={store}
   />,
   document.getElementById('root')
 );
