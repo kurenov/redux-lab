@@ -97,7 +97,6 @@ class FilterLink extends React.Component {
   }
 
   render () {
-    console.log('RENDER');
     const props = this.props;
     const state = store.getState();
 
@@ -146,6 +145,28 @@ const TodoList = ({todos, onTodoClick}) => {
   );
 };
 
+class VisibleTodoList extends React.Component {
+  render() {
+    // const props = this.props;
+    const state = store.getState();
+
+    return (
+      <TodoList
+        todos={
+          getVisibleTodos(state.todos, state.visibilityFilter)
+        }
+        onTodoClick={(id) => {
+          store.dispatch({
+            type: 'TOGGLE_TODO',
+            id
+          })
+        }}
+      />
+    );
+  }
+}
+
+
 const AddTodo = ({ onAddClick }) => {
   let input;
   return (<div>
@@ -155,10 +176,16 @@ const AddTodo = ({ onAddClick }) => {
         input = node;
       }}
     />
-    <button onClick={() => {
-      onAddClick(input.value);
-      input.value = '';
-    }}>
+    <button
+      onClick={() => {
+        store.dispatch({
+          type: 'ADD_TODO',
+          text: input.value,
+          id: todoId++
+        });
+        input.value = '';
+      }}
+    >
       Add Todo
     </button>
   </div>);
@@ -201,40 +228,19 @@ const getVisibleTodos = (todos, filter) => {
 
 let todoId = 0;
 
-const TodoApp = ({ todos, visibilityFilter }) => (
+const TodoApp = () => (
   <div>
-    <AddTodo
-      onAddClick={text =>
-        store.dispatch({
-          type: 'ADD_TODO',
-          text: text,
-          id: todoId++
-        })
-      }
-    />
-    <TodoList
-      todos={getVisibleTodos(todos, visibilityFilter)}
-      onTodoClick={(id) => {
-        store.dispatch({
-          type: 'TOGGLE_TODO',
-          id
-        });
-      }}
-    />
+    <AddTodo/>
+    <VisibleTodoList/>
     <Footer/>
   </div>
 );
 
-
-const render = () => {
-  console.log('state', store.getState());
-  ReactDOM.render(
-    <TodoApp
-      {...store.getState()}
-    />,
-    document.getElementById('root')
-  );
-};
-
-store.subscribe(render);
-render();
+// removing the render function, since
+// components in TodoApp, are subscribed by themselves
+ReactDOM.render(
+  <TodoApp
+    {...store.getState()}
+  />,
+  document.getElementById('root')
+);
